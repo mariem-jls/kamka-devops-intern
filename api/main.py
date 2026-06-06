@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import psycopg2
@@ -13,6 +13,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 def get_db():
     return psycopg2.connect(
         host=os.getenv("POSTGRES_HOST", "db"),
@@ -20,6 +21,7 @@ def get_db():
         user=os.getenv("POSTGRES_USER", "postgres"),
         password=os.getenv("POSTGRES_PASSWORD", "password")
     )
+
 
 def init_db():
     conn = get_db()
@@ -35,17 +37,21 @@ def init_db():
     cur.close()
     conn.close()
 
+
 @app.on_event("startup")
 def startup():
     init_db()
+
 
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
+
 class Todo(BaseModel):
     title: str
     done: bool = False
+
 
 @app.get("/todos")
 def get_todos():
@@ -56,6 +62,7 @@ def get_todos():
     cur.close()
     conn.close()
     return [{"id": r[0], "title": r[1], "done": r[2]} for r in rows]
+
 
 @app.post("/todos")
 def create_todo(todo: Todo):
@@ -68,6 +75,7 @@ def create_todo(todo: Todo):
     conn.close()
     return {"id": id, "title": todo.title, "done": todo.done}
 
+
 @app.put("/todos/{id}")
 def update_todo(id: int, todo: Todo):
     conn = get_db()
@@ -77,6 +85,7 @@ def update_todo(id: int, todo: Todo):
     cur.close()
     conn.close()
     return {"id": id, "title": todo.title, "done": todo.done}
+
 
 @app.delete("/todos/{id}")
 def delete_todo(id: int):
