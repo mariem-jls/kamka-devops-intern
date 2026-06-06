@@ -1,0 +1,77 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_API: ${{ github.repository }}/kamka-api
+  IMAGE_FRONTEND: ${{ github.repository }}/kamka-frontend
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Lint API
+        run: |
+          pip install flake8
+          flake8 api/main.py --max-line-length=120
+
+  build-and-push:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push API
+        uses: docker/build-push-action@v5
+        with:
+          context: ./api
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_API }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_API }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Simulate deploy
+        run: |
+          echo "Images pushed to GHCR"
+          echo "API: ${{ env.REGISTRY }}/${{ env.IMAGE_API }}:${{ github.sha }}"
+          echo "Frontend: ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:${{ github.sha }}"
+          echo "Deploy step ready - SSH deployment can be added here"
