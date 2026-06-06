@@ -1,0 +1,11 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: Arial, sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 40px; }
+.container { background: white; padding: 30px; border-radius: 10px; width: 100%; max-width: 500px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+h1 { margin-bottom: 20px; color: #333; }
+.input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+button { padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 6px; cursor: pointer; }
+button:hover { background: #45a049; }
+li { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
+li.done span { text-decoration: line-through; color: #aaa; }
+.delete-btn { background: #e74c3c; padding: 5px 10px; font-size: 12px; }
