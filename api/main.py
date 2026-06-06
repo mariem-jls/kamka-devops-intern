@@ -96,3 +96,4 @@ def delete_todo(id: int):
     cur.close()
     conn.close()
     return {"message": "deleted"}
+    
